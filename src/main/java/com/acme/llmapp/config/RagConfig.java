@@ -43,6 +43,7 @@ public class RagConfig {
     private static final Logger log = LoggerFactory.getLogger(RagConfig.class);
 
     private final EmbeddingModel embeddingModel;
+    private final InMemoryEmbeddingStore<TextSegment> store = new InMemoryEmbeddingStore<>();
 
     public RagConfig(EmbeddingModel embeddingModel) {
         this.embeddingModel = embeddingModel;
@@ -76,7 +77,7 @@ public class RagConfig {
      */
     @Bean
     public EmbeddingStore<TextSegment> embeddingStore() {
-        return new InMemoryEmbeddingStore<>();
+        return store;
     }
 
     // ── Chat Memory (per-session sliding window) ──────────────────────────────
@@ -130,7 +131,7 @@ public class RagConfig {
         EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
                 .documentSplitter(splitter)
                 .embeddingModel(embeddingModel)
-                .embeddingStore(embeddingStore())
+                .embeddingStore(store)
                 .build();
 
         ingestor.ingest(docs);

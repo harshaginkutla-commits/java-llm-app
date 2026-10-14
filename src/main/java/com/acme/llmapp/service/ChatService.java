@@ -5,30 +5,26 @@ import com.acme.llmapp.dto.ChatResponse;
 import com.acme.llmapp.model.ChatMessage;
 import com.acme.llmapp.orchestration.AssistantService;
 import com.acme.llmapp.repository.ChatMessageRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 
-/**
- * Service Layer — Business logic, orchestration coordination, prompt management.
- *
- * Responsibilities:
- *  1. Validate / enrich the incoming request
- *  2. Delegate to the AI Orchestration layer (LangChain4j AssistantService)
- *  3. Persist both turns via the Data Access layer (JPA)
- *  4. Build and return a structured ChatResponse
- */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class ChatService {
 
-    private final AssistantService assistantService;        // AI Orchestration Layer
-    private final ChatMessageRepository messageRepository;  // Data Access Layer
+    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
+
+    private final AssistantService assistantService;
+    private final ChatMessageRepository messageRepository;
+
+    public ChatService(AssistantService assistantService, ChatMessageRepository messageRepository) {
+        this.assistantService = assistantService;
+        this.messageRepository = messageRepository;
+    }
 
     @Transactional
     public ChatResponse chat(ChatRequest request) {

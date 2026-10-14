@@ -13,8 +13,8 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,12 +37,16 @@ import java.util.function.Supplier;
  * Documents in src/main/resources/documents/ are ingested automatically
  * on startup so the RAG pipeline has something to search from day one.
  */
-@Slf4j
 @Configuration
-@RequiredArgsConstructor
 public class RagConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(RagConfig.class);
+
     private final EmbeddingModel embeddingModel;
+
+    public RagConfig(EmbeddingModel embeddingModel) {
+        this.embeddingModel = embeddingModel;
+    }
 
     @Value("${app.rag.max-results:3}")
     private int maxResults;

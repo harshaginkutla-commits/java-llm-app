@@ -8,8 +8,8 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,14 +25,19 @@ import java.util.Map;
  * For PDF ingestion wire in ApachePdfBoxDocumentParser instead of
  * reading the bytes as a string.
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/documents")
-@RequiredArgsConstructor
 public class DocumentController {
+
+    private static final Logger log = LoggerFactory.getLogger(DocumentController.class);
 
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final EmbeddingModel              embeddingModel;
+
+    public DocumentController(EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
+        this.embeddingStore = embeddingStore;
+        this.embeddingModel = embeddingModel;
+    }
 
     @PostMapping("/ingest")
     public ResponseEntity<Map<String, String>> ingest(

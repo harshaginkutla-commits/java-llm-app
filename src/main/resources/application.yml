@@ -1,0 +1,75 @@
+spring:
+  application:
+    name: java-llm-app
+
+  # ── Database (H2 default — works with zero setup) ──────────────────────────
+  datasource:
+    url: jdbc:h2:mem:llmappdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# ── LangChain4j / OpenAI ────────────────────────────────────────────────────
+langchain4j:
+  open-ai:
+    chat-model:
+      api-key: ${OPENAI_API_KEY:demo-key}
+      model-name: gpt-4o
+      temperature: 0.7
+      max-tokens: 1000
+      log-requests: true
+      log-responses: true
+    embedding-model:
+      api-key: ${OPENAI_API_KEY:demo-key}
+      model-name: text-embedding-3-small
+
+# ── App config ───────────────────────────────────────────────────────────────
+app:
+  rag:
+    enabled: true
+    max-results: 3
+    min-score: 0.6
+  chat:
+    system-prompt: |
+      You are a helpful enterprise AI assistant.
+      Answer questions concisely and professionally.
+      Use the provided context when available.
+
+# ── Actuator ─────────────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+---
+# ── Postgres profile (production) ────────────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: postgres
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:llmapp}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASS:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect

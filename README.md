@@ -16,7 +16,7 @@ Users / Channels
 │                                              │
 │  API Layer          ChatController.java      │
 │  Service Layer      ChatService.java         │──► ③ Prompt + Context
-│  AI Orchestration   AssistantService.java    │──► LLM Provider (OpenAI)
+│  AI Orchestration   AssistantService.java    │──► LLM Provider (OpenAI) - https://platform.openai.com/api-keys
 │  Data Access        ChatMessageRepository    │◄── ④ LLM Response
 │                     (JPA / Hibernate)        │
 └─────────────────────────────────────────────┘

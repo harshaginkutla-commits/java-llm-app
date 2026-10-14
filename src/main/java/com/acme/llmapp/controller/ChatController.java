@@ -5,7 +5,6 @@ import com.acme.llmapp.dto.ChatResponse;
 import com.acme.llmapp.model.ChatMessage;
 import com.acme.llmapp.service.ChatService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,11 +19,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/chat")
-@RequiredArgsConstructor
-@CrossOrigin(origins = "*")   // tighten in production
+@CrossOrigin(origins = "*")
 public class ChatController {
 
     private final ChatService chatService;
+
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
+    }
 
     /**
      * Main endpoint — user sends a message, receives an AI-generated reply.

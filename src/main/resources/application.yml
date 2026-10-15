@@ -31,7 +31,10 @@ langchain4j:
       max-tokens: 1000
       log-requests: true
       log-responses: true
-    # embedding-model handled locally — see RagConfig.java
+    embedding-model:
+      api-key: ${GROQ_API_KEY:demo-key}
+      base-url: https://api.groq.com/openai/v1
+      model-name: text-embedding-3-small
 
 # ── App config ───────────────────────────────────────────────────────────────
 app:

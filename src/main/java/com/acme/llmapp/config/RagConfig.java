@@ -127,14 +127,19 @@ public class RagConfig {
             return;
         }
 
-        DocumentSplitter splitter = DocumentSplitters.recursive(500, 50);
-        EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
-                .documentSplitter(splitter)
-                .embeddingModel(embeddingModel)
-                .embeddingStore(store)
-                .build();
+        try {
+            DocumentSplitter splitter = DocumentSplitters.recursive(500, 50);
+            EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
+                    .documentSplitter(splitter)
+                    .embeddingModel(embeddingModel)
+                    .embeddingStore(store)
+                    .build();
 
-        ingestor.ingest(docs);
-        log.info("RAG: ingested {} document(s) into the embedding store", docs.size());
+            ingestor.ingest(docs);
+            log.info("RAG: ingested {} document(s) into the embedding store", docs.size());
+        } catch (Exception e) {
+            log.warn("RAG: document ingestion failed (app will start without pre-loaded knowledge): {}", e.getMessage());
+            log.warn("RAG: to enable RAG, ensure your OpenAI API key has credits at https://platform.openai.com/settings/organization/billing/");
+        }
     }
 }

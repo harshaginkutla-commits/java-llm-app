@@ -20,19 +20,18 @@ spring:
       enabled: true
       path: /h2-console
 
-# ── LangChain4j / OpenAI ────────────────────────────────────────────────────
+# ── LangChain4j / Groq (OpenAI-compatible, free tier) ──────────────────────
 langchain4j:
   open-ai:
     chat-model:
-      api-key: ${OPENAI_API_KEY:demo-key}
-      model-name: gpt-4o
+      api-key: ${GROQ_API_KEY:demo-key}
+      base-url: https://api.groq.com/openai/v1
+      model-name: llama-3.3-70b-versatile
       temperature: 0.7
       max-tokens: 1000
       log-requests: true
       log-responses: true
-    embedding-model:
-      api-key: ${OPENAI_API_KEY:demo-key}
-      model-name: text-embedding-3-small
+    # embedding-model handled locally — see RagConfig.java
 
 # ── App config ───────────────────────────────────────────────────────────────
 app:

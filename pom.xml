@@ -53,10 +53,17 @@
             <version>${langchain4j.version}</version>
         </dependency>
 
-        <!-- LangChain4j — OpenAI (also works with Azure OpenAI) -->
+        <!-- LangChain4j — OpenAI-compatible (used for Groq chat) -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-open-ai-spring-boot-starter</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+
+        <!-- LangChain4j — Local embedding model (no API key needed) -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-embeddings-all-minilm-l6-v2</artifactId>
             <version>${langchain4j.version}</version>
         </dependency>
 

@@ -1,0 +1,79 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Needed to push to GitHub Container Registry (ghcr.io)
+permissions:
+  contents: read
+  packages: write
+
+env:
+  # ghcr.io/<your-github-username>/<repo-name>
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
+jobs:
+  # ── Job 1: Test ────────────────────────────────────────────────────────────
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven          # caches ~/.m2 between runs — much faster
+
+      - name: Run tests
+        run: mvn test -q
+        env:
+          # Tests run with a fake key — ChatServiceTest should mock the LLM
+          GROQ_API_KEY: test-key
+
+  # ── Job 2: Build & Push Image ──────────────────────────────────────────────
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test                 # only runs if tests pass
+    if: github.ref == 'refs/heads/main'   # only on main branch, not PRs
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}   # auto-provided by GitHub, no setup
+
+      - name: Extract metadata (tags & labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-          # e.g. sha-abc1234
+            type=raw,value=latest         # always tag latest on main
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3   # enables layer caching
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha       # GitHub Actions cache — speeds up builds
+          cache-to: type=gha,mode=max

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-llm-app
+  labels:
+    app: java-llm-app
+spec:
+  replicas: 2                    # run 2 pods — if one crashes, the other serves traffic
+  selector:
+    matchLabels:
+      app: java-llm-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0          # never take all pods down during an update
+      maxSurge: 1                # spin up 1 extra pod before killing the old one
+  template:
+    metadata:
+      labels:
+        app: java-llm-app
+    spec:
+      containers:
+        - name: java-llm-app
+          image: ghcr.io/harshaginkutla-commits/java-llm-app:latest
+          ports:
+            - containerPort: 8080
+
+          # Inject the secret as an environment variable
+          env:
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: groq-secret       # the Secret we created
+                  key: GROQ_API_KEY
+
+          # Liveness probe: if this fails, k8s restarts the pod
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30      # wait 30s before first check (startup time)
+            periodSeconds: 15
+
+          # Readiness probe: pod only gets traffic when this passes
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+
+          # Resource limits — prevents one pod from eating the whole node
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"         # 250 millicores = 0.25 CPU
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

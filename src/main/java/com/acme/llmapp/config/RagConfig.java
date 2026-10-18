@@ -7,8 +7,10 @@ import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.rag.content.Content;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
+import dev.langchain4j.rag.query.Query;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
@@ -24,6 +26,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -93,12 +96,26 @@ public class RagConfig {
 
     @Bean
     public ContentRetriever contentRetriever(EmbeddingStore<TextSegment> store) {
-        return EmbeddingStoreContentRetriever.builder()
+        ContentRetriever delegate = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(store)
                 .embeddingModel(embeddingModel)
                 .maxResults(maxResults)
                 .minScore(minScore)
                 .build();
+
+        // Wrap in a safe retriever — if embedding fails (no API key/credits),
+        // return empty results instead of crashing the chat request
+        return new ContentRetriever() {
+            @Override
+            public List<Content> retrieve(Query query) {
+                try {
+                    return delegate.retrieve(query);
+                } catch (Exception e) {
+                    log.debug("RAG retrieval skipped (embedding unavailable): {}", e.getMessage());
+                    return Collections.emptyList();
+                }
+            }
+        };
     }
 
     // ── Document Ingestion on Startup ─────────────────────────────────────────
